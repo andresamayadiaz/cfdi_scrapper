@@ -1,5 +1,10 @@
 # aad Feb 2015
 
+require "uri"
+require "net/http"
+require "json"
+require "uuid"
+
 module CfdiScrapper
   
   # Clase General del API
@@ -9,13 +14,13 @@ module CfdiScrapper
     
     def initialize(params)
     
-      self.url = params[:url].blank? ? "http://localhost/erp/" : params[:url]
-      self.user = params[:user].blank? ? "" : params[:user]
-      self.password = params[:password].blank? ? "" : params[:password]
-      self.company = params[:company].blank? ? "" : params[:company]
+      self.url = params[:url]
+      self.user = params[:user]
+      self.password = params[:password]
+      self.company = params[:company]
     
     end
-  
+    
     # Envia una factura
     # Type: POST
     def cfdi_sales(params)
@@ -31,19 +36,20 @@ module CfdiScrapper
       
       uri = URI.parse(self.url + "/cfdi/sales/areas/")
       http = Net::HTTP.new(uri.host, uri.port)
-      request = Net::HTTP.Get.new(uri)
+      request = Net::HTTP::Get.new(uri)
       
-      request["X-COMPANY"] = self.company
-      request["X-USER"] = self.company
-      request["X-PASSWORD"] = self.company
+      request["X_company"] = self.company
+      request["X_user"] = self.user
+      request["X_password"] = self.password
       
       response = http.request(request)
       
-      areas = Array.new
+      areas = {}
       if response.kind_of? Net::HTTPSuccess
-        JSON.parse(response.body.to_s).each do |area|
-          areas.push Serie.new(area)
-        end
+        #JSON.parse(response.body.to_s).each do |area|
+        #  areas.push(area)
+        #end
+        areas = JSON.parse(response.body.to_s)
       end
       return areas
       
@@ -55,20 +61,19 @@ module CfdiScrapper
       
       uri = URI.parse(self.url + "/cfdi/customer/?rfc=" + rfc)
       http = Net::HTTP.new(uri.host, uri.port)
-      request = Net::HTTP.Get.new(uri)
+      request = Net::HTTP::Get.new(uri)
       
-      request["X-COMPANY"] = self.company
-      request["X-USER"] = self.company
-      request["X-PASSWORD"] = self.company
+      request["X_company"] = self.company
+      request["X_user"] = self.user
+      request["X_password"] = self.password
       
       response = http.request(request)
       
-      customers = Array.new
+      customers = {}
       if response.kind_of? Net::HTTPSuccess
-        JSON.parse(response.body.to_s).each do |customer|
-          customers.push Serie.new(customer)
-        end
+        customers = JSON.parse(response.body.to_s)
       end
+      
       return customers
       
     end
@@ -79,24 +84,176 @@ module CfdiScrapper
       
       uri = URI.parse(self.url + "/cfdi/customer/branch/" + customer_id)
       http = Net::HTTP.new(uri.host, uri.port)
-      request = Net::HTTP.Get.new(uri)
+      request = Net::HTTP::Get.new(uri)
       
-      request["X-COMPANY"] = self.company
-      request["X-USER"] = self.company
-      request["X-PASSWORD"] = self.company
+      request["X_company"] = self.company
+      request["X_user"] = self.user
+      request["X_password"] = self.password
       
       response = http.request(request)
       
-      branches = Array.new
+      branches = {}
       if response.kind_of? Net::HTTPSuccess
-        JSON.parse(response.body.to_s).each do |branch|
-          branches.push Serie.new(branch)
-        end
+        branches = JSON.parse(response.body.to_s)
       end
       return branches
       
     end
     
+    # Obtener payment_term_id
+    # GET /paymentterms/
+    def get_payment_id
+      
+      uri = URI.parse(self.url + "/paymentterms/")
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Get.new(uri)
+      
+      request["X_company"] = self.company
+      request["X_user"] = self.user
+      request["X_password"] = self.password
+      
+      response = http.request(request)
+      
+      payments = {}
+      if response.kind_of? Net::HTTPSuccess
+        payments = JSON.parse(response.body.to_s)
+      end
+      
+      return payments
+      
+    end
+    
+    # Obtener location_id
+    # GET /locations/
+    def get_location_id
+      
+      uri = URI.parse(self.url + "/locations/")
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Get.new(uri)
+      
+      request["X_company"] = self.company
+      request["X_user"] = self.user
+      request["X_password"] = self.password
+      
+      response = http.request(request)
+      
+      locations = {}
+      if response.kind_of? Net::HTTPSuccess
+        locations = JSON.parse(response.body.to_s)
+      end
+      
+      return locations
+      
+    end
+    
+    # Obtener sales_type
+    # GET /cfdi/sales/types/
+    def get_sales_types
+      
+      uri = URI.parse(self.url + "/cfdi/sales/types/")
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Get.new(uri)
+      
+      request["X_company"] = self.company
+      request["X_user"] = self.user
+      request["X_password"] = self.password
+      
+      response = http.request(request)
+      
+      sales_types = {}
+      if response.kind_of? Net::HTTPSuccess
+        sales_types = JSON.parse(response.body.to_s)
+      end
+      
+      return sales_types
+      
+    end
+    
+    # Obtener tax_types
+    # GET /cfdi/taxtypes/
+    def get_taxtypes
+      
+      uri = URI.parse(self.url + "/cfdi/taxtypes/")
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Get.new(uri)
+      
+      request["X_company"] = self.company
+      request["X_user"] = self.user
+      request["X_password"] = self.password
+      
+      response = http.request(request)
+      
+      taxtypes = {}
+      if response.kind_of? Net::HTTPSuccess
+        taxtypes = JSON.parse(response.body.to_s)
+      end
+      
+      return taxtypes
+      
+    end
+    
+    def generate_invoice_example
+      
+      # Payment
+      payment = self.get_payment_id
+      
+      # Location
+      location = self.get_location_id
+      
+      # Customer
+      customer = self.get_customer_id("CTD0903038I7")
+      
+      # Sales Type
+      sales_type = self.get_sales_types
+      
+      # Tax Type
+      taxtype = self.get_taxtypes
+      
+      ex = {
+        :ref => UUID.new.generate,
+        :uuid => UUID.new.generate,
+        :folio => UUID.new.generate,
+        :fechatimbrado => Time.now,
+        :autofactura_id => UUID.new.generate,
+        :trans_type => '10', # 10 = Factura
+        :comments => 'PRUEBAS API RUBY CFDI_SCRAPPER',
+        :payment => payment[0]['id'],
+        :delivery_date => Time.now,
+        :cust_ref => UUID.new.generate,
+        :deliver_to => 'Empresa XYZ',
+        :delivery_address => 'Entregar En',
+        :phone => '',
+        :ship_via => '1', # FIJO 1
+        :location => location[0]["id"],
+        :email => 'info@example.com',
+        :customer_id => customer["no"],
+        :branch_id => customer["cust_branches"][0]["code"],
+        :sales_type => sales_type["sales_types"][0]["id"],
+        :area_id => '1', # FIJO 1
+        :dimension_id => '',
+        :dimension2_id => '',
+        :ex_rate => '1',
+        :Items => {
+          0 => {
+            :tax_type_id => taxtype[0]["id"]+"",
+            :description => 'CONCEPTO 1',
+            :qty => '1',
+            :price => '25',
+            :discount => '0'
+          },
+          1 => {
+            :tax_type_id => taxtype[0]["id"]+"",
+            :description => 'CONCEPTO 2',
+            :qty => '1',
+            :price => '50',
+            :discount => '0'
+          }
+        }
+      }
+      
+      return Factura.new(ex)
+      
+    end
   
   end
   
@@ -113,7 +270,7 @@ module CfdiScrapper
       self.folio = params[:folio]
       self.fechatimbrado = params[:fechatimbrado]
       self.autofactura_id = params[:autofactura_id]
-      self.trans_type = params[:trans_type].blank? ? 10 : params[:trans_type]
+      self.trans_type = params[:trans_type].empty? ? 10 : params[:trans_type]
       self.comments = params[:comments]
       self.payment = params[:payment]
       self.delivery_date = params[:delivery_date]
@@ -137,7 +294,7 @@ module CfdiScrapper
       params[:Items].each do |item|
         
         itm = {}
-        itm[:tax_type_id] = item[:taxt_type_id]
+        itm[:tax_type_id] = item[:tax_type_id]
         itm[:description] = item[:description]
         itm[:qty] = item[:qty]
         itm[:price] = item[:price]
@@ -146,52 +303,6 @@ module CfdiScrapper
         self.items.push(Item.new(itm))
         
       end
-      
-    end
-    
-    def get_example
-      
-      ex = {
-        :ref => '',
-        :uuid => '',
-        :folio => '',
-        :fechatimbrado => '',
-        :autofactura_id => '',
-        :trans_type => 10, # 10 = Factura
-        :comments => '',
-        :payment => '',
-        :delivery_date => '',
-        :cust_ref => '',
-        :deliver_to => '',
-        :delivery_address => '',
-        :phone => '',
-        :ship_via => '', # FIJO 1
-        :location => '',
-        :email => '',
-        :customer_id => '',
-        :branch_id => '',
-        :sales_type => '',
-        :area_id => '', # FIJO 1
-        :dimension_id => '',
-        :dimension2_id => '',
-        :ex_rate => '',
-        :Items => {
-          0 => {
-            :tax_type_id => '',
-            :description => '',
-            :qty => '',
-            :price => '',
-            :discount => ''
-          },
-          1 => {
-            :tax_type_id => '',
-            :description => '',
-            :qty => '',
-            :price => '',
-            :discount => ''
-          }
-        }
-      }
       
     end
     
@@ -206,7 +317,7 @@ module CfdiScrapper
       
       self.tax_type_id = params[:tax_type_id]
       self.description = params[:description]
-      self.qty = params[:qty].blank? ? 1 : params[:qty]
+      self.qty = params[:qty].empty? ? 1 : params[:qty]
       self.price = params[:price]
       self.discount = params[:discount]
       
