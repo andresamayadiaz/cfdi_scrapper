@@ -22,11 +22,24 @@ module CfdiScrapper
     end
     
     # Envia una factura
-    # Type: POST
+    # POST /cfdi/sales/
     def cfdi_sales(params)
       
       # FIXED VALUES
       # location, payment, ship_via, sales_type, area_id, tax_type_id
+      
+      uri = URI.parse(self.url + "/cfdi/sales/")
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Post.new(uri)
+      #request.set_form_data({"users[login]" => "quentin"})
+      
+      request["X_company"] = self.company
+      request["X_user"] = self.user
+      request["X_password"] = self.password
+      
+      response = http.request(request)
+      
+      
       
     end
     
@@ -233,25 +246,25 @@ module CfdiScrapper
         :dimension_id => '',
         :dimension2_id => '',
         :ex_rate => '1',
-        :Items => {
-          0 => {
-            :tax_type_id => taxtype[0]["id"]+"",
+        :Items => [
+          {
+            :tax_type_id => taxtype[0]["id"],
             :description => 'CONCEPTO 1',
             :qty => '1',
             :price => '25',
             :discount => '0'
           },
-          1 => {
-            :tax_type_id => taxtype[0]["id"]+"",
+          {
+            :tax_type_id => taxtype[0]["id"],
             :description => 'CONCEPTO 2',
             :qty => '1',
             :price => '50',
             :discount => '0'
           }
-        }
+        ]
       }
       
-      return Factura.new(ex)
+      return CfdiScrapper::Factura.new(ex)
       
     end
   
