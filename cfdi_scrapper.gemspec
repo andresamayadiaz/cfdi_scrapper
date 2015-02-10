@@ -8,13 +8,13 @@ Gem::Specification.new do |spec|
   spec.version       = CfdiScrapper::VERSION
   spec.authors       = ["Andres Amaya Diaz"]
   spec.email         = ["andres.amaya.diaz@gmail.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = "CFDi Scrapper for Mexico"
+  spec.description   = "Generates XLS and standard text outputs from XML Invoices"
   spec.homepage      = ""
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
-  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.executables   = ["cfdi_scrapper"] #spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 

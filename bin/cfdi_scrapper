@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require 'cfdi_scrapper'
+
+cfdi_scrapper = CfdiScrapper::Cfdi_Scrapper.new  
+chatter.start  

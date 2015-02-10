@@ -2,7 +2,6 @@ require "cfdi_scrapper/version"
 require "cfdi_scrapper/cfdi32/cfdi32"
 
 module CfdiScrapper
-  # Your code goes here...
   
   class Cfdi_Scrapper
   
