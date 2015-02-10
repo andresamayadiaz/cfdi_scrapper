@@ -4,3 +4,8 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'nokogiri'
+gem 'libxml-ruby'
+gem 'open-uri'
+gem 'csv'
+gem 'i18n'
+gem 'uuid'

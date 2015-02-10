@@ -1,11 +1,11 @@
 # aad julio 2014
-#require 'comprobantefactory'
+#require 'CfdiScrapper'
 
-module COMPROBANTEFACTORY
+module CfdiScrapper
   
   # Clase Cfdi32 para comprobnates CFDI version 3.2
   #
-  class Tfd1 #< COMPROBANTEFACTORY::TimbreFiscal
+  class Tfd1 #< CfdiScrapper::TimbreFiscal
     
     attr_accessor :doc, :version, :uuid, :fechaTimbrado, :selloCFD, :noCertificadoSAT, :selloSAT
     
@@ -31,7 +31,7 @@ module COMPROBANTEFACTORY
       
       file = LibXML::XML::Document.string(@doc.xpath("//tfd:TimbreFiscalDigital", 'tfd' => @doc.collect_namespaces["xmlns:tfd"]).to_s)
       
-      stylesheet_doc = LibXML::XML::Document.file("public/sat/cadenaoriginal_TFD_1_0.xslt")
+      stylesheet_doc = LibXML::XML::Document.file("cadenaoriginal_TFD_1_0.xslt")
       stylesheet = LibXSLT::XSLT::Stylesheet.new(stylesheet_doc)
       
       result = stylesheet.apply(file)

@@ -2,5 +2,14 @@
 
 require 'cfdi_scrapper'
 
-cfdi_scrapper = CfdiScrapper::Cfdi_Scrapper.new  
-chatter.start  
+if ARGV[0] == '-dir'
+  CfdiScrapper::Cfdi_Scrapper.start(ARGV[1])
+elsif ARGV[0] == '-receptores'
+  CfdiScrapper::Cfdi_Scrapper.csv_receptores(ARGV[1])
+elsif ARGV[0] == '-emisores'
+  CfdiScrapper::Cfdi_Scrapper.csv_emisores(ARGV[1])
+elsif ARGV[0] == '-comprobantes'
+  CfdiScrapper::Cfdi_Scrapper.csv_comprobantes(ARGV[1])
+else
+  puts "First Argument must be -dir or -receptores\nSecond Argument: XML Files Path"
+end

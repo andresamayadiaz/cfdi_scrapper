@@ -1,13 +1,12 @@
 # aad mayo 2014
-#require 'comprobantefactory'
+#require 'CfdiScrapper'
 #require 'tfd1'
-require 'libxslt'
 
-module COMPROBANTEFACTORY
+module CfdiScrapper
   
   # Clase Cfdi32 para comprobnates CFDI version 3.2
   #
-  class Cfdi32 #< COMPROBANTEFACTORY::Comprobante
+  class Cfdi32 #< CfdiScrapper::Comprobante
     
     attr_accessor :doc
     
@@ -28,19 +27,19 @@ module COMPROBANTEFACTORY
       @formaDePago = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("formaDePago").to_s
       @noCertificado = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("noCertificado").to_s
       @moneda = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("Moneda").to_s
-      @tipoCambio = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("TipoCambio").to_s.to_d
-      @subTotal = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("subTotal").to_s.to_d
-      @total = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("total").to_s.to_d
-      @descuento = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("descuento").to_s.to_d
-      @totalImpuestosRetenidos = @doc.root.xpath("//cfdi:Impuestos", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("totalImpuestosRetenidos").to_s.to_d
-      @totalImpuestosTrasladados = @doc.root.xpath("//cfdi:Impuestos", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("totalImpuestosTrasladados").to_s.to_d
+      @tipoCambio = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("TipoCambio").to_s
+      @subTotal = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("subTotal").to_s
+      @total = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("total").to_s
+      @descuento = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("descuento").to_s
+      @totalImpuestosRetenidos = @doc.root.xpath("//cfdi:Impuestos", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("totalImpuestosRetenidos").to_s
+      @totalImpuestosTrasladados = @doc.root.xpath("//cfdi:Impuestos", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("totalImpuestosTrasladados").to_s
       @metodoDePago = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("metodoDePago").to_s
       @lugarExpedicion = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("lugarExpedicion").to_s
       @serie = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("serie").to_s
       @folio = @doc.root.xpath("//cfdi:Comprobante", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("folio").to_s
       
       # Emisor
-      @emisor = COMPROBANTEFACTORY::Emisor.new
+      @emisor = CfdiScrapper::Emisor.new
       #@emisor.rfc = @doc.root.xpath("//cfdi:Comprobante/Emisor").attribute("rfc").to_s
       @emisor.rfc = @doc.root.xpath("//cfdi:Emisor", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("rfc").to_s
       @emisor.regimenFiscal = @doc.root.xpath("//cfdi:Emisor", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("regimenFiscal").to_s
@@ -58,7 +57,7 @@ module COMPROBANTEFACTORY
       #logger.debug "Emisor: #{@emisor.to_json.to_s}"
       
       # Receptor
-      @receptor = COMPROBANTEFACTORY::Receptor.new
+      @receptor = CfdiScrapper::Receptor.new
       #@receptor.rfc = @doc.root.xpath("//cfdi:Comprobante/Receptor").attribute("rfc").to_s
       @receptor.rfc = @doc.root.xpath("//cfdi:Receptor", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("rfc").to_s
       @receptor.nombre = @doc.root.xpath("//cfdi:Receptor", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("nombre").to_s
@@ -79,7 +78,7 @@ module COMPROBANTEFACTORY
       
       if @versionComplemento == '1.0'
         
-        @timbre = COMPROBANTEFACTORY::Tfd1.new(@doc)
+        @timbre = CfdiScrapper::Tfd1.new(@doc)
         #@timbre.version = @versionComplemento
         
         @uuid = @doc.root.xpath("//tfd:TimbreFiscalDigital", 'tfd' => @doc.collect_namespaces["xmlns:tfd"]).attribute("UUID").to_s
@@ -107,7 +106,7 @@ module COMPROBANTEFACTORY
       @conceptos = Array.new
       @doc.root.xpath("//cfdi:Concepto", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).each do |concepto|
         
-        c = COMPROBANTEFACTORY::Concepto.new
+        c = CfdiScrapper::Concepto.new
         c.cantidad = concepto.attribute("cantidad").to_s
         c.unidad = concepto.attribute("unidad").to_s
         c.valorUnitario = concepto.attribute("valorUnitario").to_s
@@ -123,7 +122,7 @@ module COMPROBANTEFACTORY
       
       file = LibXML::XML::Document.string(@doc.to_s)
       
-      stylesheet_doc = LibXML::XML::Document.file("public/sat/cadenaoriginal_3_2.xslt")
+      stylesheet_doc = LibXML::XML::Document.file("cadenaoriginal_3_2.xslt")
       stylesheet = LibXSLT::XSLT::Stylesheet.new(stylesheet_doc)
       
       result = stylesheet.apply(file)
