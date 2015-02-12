@@ -9,6 +9,8 @@ require 'cfdi_scrapper/cfdi32/cfdi32'
 require 'cfdi_scrapper/timbrefiscaldigital/tfd1'
 require 'cfdi_scrapper/erpapi'
 
+I18n.enforce_available_locales = false
+
 module CfdiScrapper
   
   class Cfdi_Scrapper

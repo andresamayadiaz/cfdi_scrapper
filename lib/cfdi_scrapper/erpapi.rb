@@ -238,6 +238,75 @@ module CfdiScrapper
   
   end
   
+  def generate_invoice_from_xml(file_path)
+    
+    @doc = Nokogiri::XML( File.read(file_path))
+    @c = CfdiScrapper::Cfdi32.new(@doc)
+    
+    # Payment
+    payment = self.get_payment_id
+    
+    # Location
+    location = self.get_location_id
+    
+    # Customer
+    customer = self.get_customer_id(@c.receptor.rfc)
+    
+    # Sales Type
+    sales_type = self.get_sales_types
+    
+    # Tax Type
+    #[{"id"=>"1", "name"=>"I.V.A. 16%", "rate"=>"16"}, {"id"=>"2", "name"=>"I.S.R. 10%", "rate"=>"-10"}, {"id"=>"3", "name"=>"I.V.A. RET 4%", "rate"=>"-4"}, {"id"=>"4", "name"=>"I.V.A. 0%", "rate"=>"0"}, {"id"=>"5", "name"=>"I.V.A. RET 10.66%", "rate"=>"-10.7"}] 
+    taxtype = self.get_taxtypes
+    
+    # Items
+    items = Array.new
+    
+    @c.conceptos.each do |concepto|
+      
+      items.push({
+            :tax_type_id => taxtype[0]["id"],
+            :description => concepto.descripcion,
+            :qty => concepto.cantidad,
+            :price => concepto.valorUnitario,
+            :discount => 0
+          })
+      
+    end
+    
+    # Example
+    ex = {
+      :ref => @c.serie + @c.folio, #UUID.new.generate, auto
+      :uuid => @c.timbre.uuid,
+      :folio => @c.serie + @c.folio,
+      :fechatimbrado => @c.timbre.fechaTimbrado,
+      :autofactura_id => @c.timbre.uuid,
+      :trans_type => '10', # 10 = Factura
+      :comments => '',
+      :payment => payment[0]['id'],
+      :delivery_date => Time.new(@c.fecha).strftime("%Y-%m-%d"),
+      :cust_ref => @c.serie + @c.folio, #UUID.new.generate,
+      :deliver_to => Time.new(@c.fecha).strftime("%Y-%m-%d"),
+      :delivery_address => @c.lugarExpedicion,
+      :phone => '',
+      :ship_via => customer["cust_branches"][0]["default_ship_via"],
+      :location => location[0]["loc_code"],
+      :email => '',
+      :customer_id => customer["no"],
+      :branch_id => customer["cust_branches"][0]["code"],
+      :sales_type => sales_type["sales_types"][0]["id"],
+      :area_id => '1', # FIJO 1
+      :dimension_id => '',
+      :dimension2_id => '',
+      :ex_rate => '1'
+    }
+    
+    ex[:items] = items.to_json
+    
+    return ex
+    
+  end
+  
   # Clase Factura
   class Factura
     
