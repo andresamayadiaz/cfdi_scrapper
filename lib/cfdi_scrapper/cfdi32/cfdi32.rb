@@ -50,6 +50,7 @@ module CfdiScrapper
         @emisor.domicilio_noExterior = @doc.root.xpath("//cfdi:DomicilioFiscal", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("noExterior").to_s
         @emisor.domicilio_noInterior = @doc.root.xpath("//cfdi:DomicilioFiscal", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("noInterior").to_s
         @emisor.domicilio_municipio = @doc.root.xpath("//cfdi:DomicilioFiscal", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("municipio").to_s
+        @emisor.domicilio_colonia = @doc.root.xpath("//cfdi:DomicilioFiscal", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("colonia").to_s
         @emisor.domicilio_estado = @doc.root.xpath("//cfdi:DomicilioFiscal", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("estado").to_s
         @emisor.domicilio_pais = @doc.root.xpath("//cfdi:DomicilioFiscal", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("pais").to_s
         @emisor.domicilio_codigoPostal = @doc.root.xpath("//cfdi:DomicilioFiscal", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("codigoPostal").to_s
@@ -67,6 +68,7 @@ module CfdiScrapper
         @receptor.domicilio_noExterior = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("noExterior").to_s
         @receptor.domicilio_noInterior = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("noInterior").to_s
         @receptor.domicilio_municipio = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("municipio").to_s
+        @receptor.domicilio_colonia = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("colonia").to_s
         @receptor.domicilio_estado = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("estado").to_s
         @receptor.domicilio_pais = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("pais").to_s
         @receptor.domicilio_codigoPostal = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("codigoPostal").to_s

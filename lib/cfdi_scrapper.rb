@@ -194,7 +194,7 @@ module CfdiScrapper
       end
     
     end
-  
+    
     private
       
       def self.obtener_uuid(doc)

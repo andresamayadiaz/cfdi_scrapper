@@ -54,6 +54,78 @@ module CfdiScrapper
       
     end
     
+    # Envia todos los xml de un directorio al ERP
+    def multiple_cfdi_sales(dir, test_only=false)
+      
+      @dir = dir
+      
+      # iterate dir path for xml files
+      Dir.glob(@dir+"**/*").each do |file|
+        
+        if File.extname(file).casecmp(".xml") >= 0
+          
+          begin
+            
+            puts "----------------------------------------------------"
+            puts "Processing: " + file.to_s
+            
+            factura = self.generate_invoice_from_xml(file)
+            if test_only == true
+              puts factura
+            else
+              puts self.cfdi_sales(factura).to_s
+            end
+            
+            factura = nil
+            
+          rescue Exception => e
+            #puts e.backtrace.inspect
+            puts "ERROR\n"
+            puts e.to_s
+          end
+    
+        else
+          # not an xml
+        end
+  
+      end
+      
+    end
+    
+    # Obtener articulos
+    # GET /inventory/
+    def get_inventory
+      
+      path = "/inventory/"
+      
+      response = self.get_request(path)
+      
+      inventory = {}
+      if response.kind_of? Net::HTTPSuccess
+        inventory = JSON.parse(response.body.to_s)
+      end
+      
+      return inventory
+      
+    end
+    
+    # Obtener articulo específico
+    # GET /inventory/:stock_id
+    def get_inventory(stock_id)
+      
+      path = "/inventory/" + stock_id
+      
+      response = self.get_request(path)
+      
+      inventory = {}
+      if response.kind_of? Net::HTTPSuccess
+        inventory = JSON.parse(response.body.to_s)
+      end
+      
+      return inventory
+      
+    end
+    
     # Obtener area_id
     # GET /cfdi/sales/areas/
     def get_area_id
@@ -174,6 +246,88 @@ module CfdiScrapper
       
     end
     
+    # Generate API Invoice From CFDi v3.2 XML File
+    def generate_invoice_from_xml(file_path)
+    
+      @doc = Nokogiri::XML( File.read(file_path))
+      @c = Cfdi32.new(@doc)
+      raise "Invalid XML" if @c.nil?
+      
+      # Payment
+      payment = self.get_payment_id
+      raise "Payment Not Found" if payment.empty?
+    
+      # Location
+      location = self.get_location_id
+      raise "Location Not Found" if location.empty?
+    
+      # Customer
+      customer = self.get_customer_id(@c.receptor.rfc)
+      raise "Customer Not Found: #{@c.receptor.rfc}" if customer.empty?
+       
+      # Sales Type
+      sales_type = self.get_sales_types
+      raise "Sales Type Not Found" if sales_type.empty?
+      
+      # Tax Type
+      #[{"id"=>"1", "name"=>"I.V.A. 16%", "rate"=>"16"}, {"id"=>"2", "name"=>"I.S.R. 10%", "rate"=>"-10"}, {"id"=>"3", "name"=>"I.V.A. RET 4%", "rate"=>"-4"}, {"id"=>"4", "name"=>"I.V.A. 0%", "rate"=>"0"}, {"id"=>"5", "name"=>"I.V.A. RET 10.66%", "rate"=>"-10.7"}] 
+      taxtype = self.get_taxtypes
+      raise "Tax Type Not Found" if taxtype.empty?
+      
+      # Stock ID
+      stock_id = self.get_inventory("SERVICIO")
+      raise "Stock ID Not Found" if stock_id.empty?
+      
+      # Items
+      items = Array.new
+      
+      @c.conceptos.each do |concepto|
+      
+        items.push({
+              :stock_id => stock_id["stock_id"],
+              :tax_type_id => taxtype[0]["id"],
+              :description => concepto.descripcion,
+              :qty => concepto.cantidad,
+              :price => concepto.valorUnitario,
+              :discount => 0
+            })
+      
+      end
+      
+      # Example
+      ex = {
+        :ref => @c.serie + @c.folio, #UUID.new.generate, auto
+        :uuid => @c.timbre.uuid,
+        :folio => @c.serie + @c.folio,
+        :fechatimbrado => @c.timbre.fechaTimbrado,
+        :autofactura_id => @c.timbre.uuid,
+        :trans_type => '10', # 10 = Factura
+        :comments => '',
+        :payment => payment[0]['id'],
+        :delivery_date => Time.new(@c.fecha).strftime("%Y-%m-%d"),
+        :cust_ref => @c.serie + @c.folio, #UUID.new.generate,
+        :deliver_to => Time.new(@c.fecha).strftime("%Y-%m-%d"),
+        :delivery_address => @c.receptor.domicilio_calle.to_s + " " + @c.receptor.domicilio_noExterior.to_s + " " + @c.receptor.domicilio_municipio.to_s + " " + @c.receptor.domicilio_colonia.to_s + " " + @c.receptor.domicilio_estado.to_s,
+        :phone => '',
+        :ship_via => customer["cust_branches"][0]["default_ship_via"],
+        :location => location[0]["loc_code"],
+        :email => '',
+        :customer_id => customer["no"],
+        :branch_id => customer["cust_branches"][0]["code"],
+        :sales_type => sales_type["sales_types"][0]["id"],
+        :area_id => '1', # FIJO 1
+        :dimension_id => '',
+        :dimension2_id => '',
+        :ex_rate => '1'
+      }
+    
+      ex[:items] = items.to_json
+    
+      return ex
+    
+    end
+    
+    # Generate API Invoice Example
     def generate_invoice_example
       
       # Payment
@@ -236,75 +390,41 @@ module CfdiScrapper
       
     end
   
-  end
-  
-  def generate_invoice_from_xml(file_path)
-    
-    @doc = Nokogiri::XML( File.read(file_path))
-    @c = CfdiScrapper::Cfdi32.new(@doc)
-    
-    # Payment
-    payment = self.get_payment_id
-    
-    # Location
-    location = self.get_location_id
-    
-    # Customer
-    customer = self.get_customer_id(@c.receptor.rfc)
-    
-    # Sales Type
-    sales_type = self.get_sales_types
-    
-    # Tax Type
-    #[{"id"=>"1", "name"=>"I.V.A. 16%", "rate"=>"16"}, {"id"=>"2", "name"=>"I.S.R. 10%", "rate"=>"-10"}, {"id"=>"3", "name"=>"I.V.A. RET 4%", "rate"=>"-4"}, {"id"=>"4", "name"=>"I.V.A. 0%", "rate"=>"0"}, {"id"=>"5", "name"=>"I.V.A. RET 10.66%", "rate"=>"-10.7"}] 
-    taxtype = self.get_taxtypes
-    
-    # Items
-    items = Array.new
-    
-    @c.conceptos.each do |concepto|
+    # Generate Customer Example
+    # TODO: Not Yet Implemented
+    def generate_customer_example
       
-      items.push({
-            :tax_type_id => taxtype[0]["id"],
-            :description => concepto.descripcion,
-            :qty => concepto.cantidad,
-            :price => concepto.valorUnitario,
-            :discount => 0
-          })
+      cust = {
+        :custname => "",
+        :cust_ref => "",
+        #:address => "",
+        :tax_id => "", # related
+        :curr_code => "", # related
+        :credit_status => "", # related
+        :payment_terms => "", # related
+        :discount => 0,
+        :pymt_discount => 0,
+        :credit_limit => 10000,
+        :sales_type => "", # related
+        #:notes => "",
+        :cfdi_street => "",
+        :cfdi_street_number => "",
+        #:cfdi_suite_number => "",
+        :cfdi_district => "",
+        :cfdi_postal_code => "",
+        :cfdi_city => "",
+        :cfdi_state => "",
+        :cfdi_country => "",
+        :client_no => "",
+        :area_id => "", # related
+        :salesman_id => "", # related
+        :tax_group_id => "", #related
+        :location_id => "", #related
+        :ship_via_id => "" # related
+      }
       
     end
-    
-    # Example
-    ex = {
-      :ref => @c.serie + @c.folio, #UUID.new.generate, auto
-      :uuid => @c.timbre.uuid,
-      :folio => @c.serie + @c.folio,
-      :fechatimbrado => @c.timbre.fechaTimbrado,
-      :autofactura_id => @c.timbre.uuid,
-      :trans_type => '10', # 10 = Factura
-      :comments => '',
-      :payment => payment[0]['id'],
-      :delivery_date => Time.new(@c.fecha).strftime("%Y-%m-%d"),
-      :cust_ref => @c.serie + @c.folio, #UUID.new.generate,
-      :deliver_to => Time.new(@c.fecha).strftime("%Y-%m-%d"),
-      :delivery_address => @c.lugarExpedicion,
-      :phone => '',
-      :ship_via => customer["cust_branches"][0]["default_ship_via"],
-      :location => location[0]["loc_code"],
-      :email => '',
-      :customer_id => customer["no"],
-      :branch_id => customer["cust_branches"][0]["code"],
-      :sales_type => sales_type["sales_types"][0]["id"],
-      :area_id => '1', # FIJO 1
-      :dimension_id => '',
-      :dimension2_id => '',
-      :ex_rate => '1'
-    }
-    
-    ex[:items] = items.to_json
-    
-    return ex
-    
+  
   end
   
   # Clase Factura
@@ -344,6 +464,7 @@ module CfdiScrapper
       params[:items].each do |item|
         
         itm = {}
+        itm[:stock_id] = item[:stock_id]
         itm[:tax_type_id] = item[:tax_type_id]
         itm[:description] = item[:description]
         itm[:qty] = item[:qty]
@@ -361,10 +482,11 @@ module CfdiScrapper
   # Clase Item
   class Item
     
-    attr_accessor :tax_type_id, :description, :qty, :price, :discount
+    attr_accessor :stock_id, :tax_type_id, :description, :qty, :price, :discount
     
     def initialize(params)
       
+      self.stock_id = params[:stock_id]
       self.tax_type_id = params[:tax_type_id]
       self.description = params[:description]
       self.qty = params[:qty].empty? ? 1 : params[:qty]
