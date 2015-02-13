@@ -4,6 +4,7 @@ require "uri"
 require "net/http"
 require "json"
 require "uuid"
+require "time"
 
 module CfdiScrapper
   
@@ -73,7 +74,9 @@ module CfdiScrapper
             if test_only == true
               puts factura
             else
-              puts self.cfdi_sales(factura).to_s
+              puts factura
+              puts "RESPONSE: \n"
+              puts self.cfdi_sales(factura).body.to_s
             end
             
             factura = nil
@@ -304,9 +307,9 @@ module CfdiScrapper
         :trans_type => '10', # 10 = Factura
         :comments => '',
         :payment => payment[0]['id'],
-        :delivery_date => Time.new(@c.fecha).strftime("%Y-%m-%d"),
+        :delivery_date => Time.parse(@c.fecha).strftime("%Y-%m-%d"),
         :cust_ref => @c.serie + @c.folio, #UUID.new.generate,
-        :deliver_to => Time.new(@c.fecha).strftime("%Y-%m-%d"),
+        :deliver_to => Time.parse(@c.fecha).strftime("%Y-%m-%d"),
         :delivery_address => @c.receptor.domicilio_calle.to_s + " " + @c.receptor.domicilio_noExterior.to_s + " " + @c.receptor.domicilio_municipio.to_s + " " + @c.receptor.domicilio_colonia.to_s + " " + @c.receptor.domicilio_estado.to_s,
         :phone => '',
         :ship_via => customer["cust_branches"][0]["default_ship_via"],
