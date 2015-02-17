@@ -56,7 +56,7 @@ module CfdiScrapper
     end
     
     # Envia todos los xml de un directorio al ERP
-    def multiple_cfdi_sales(dir, test_only=false)
+    def multiple_cfdi_sales(dir, test_only=false, stock='SERVICIO')
       
       @dir = dir
       
@@ -70,12 +70,12 @@ module CfdiScrapper
             puts "----------------------------------------------------"
             puts "Processing: " + file.to_s
             
-            factura = self.generate_invoice_from_xml(file)
+            factura = self.generate_invoice_from_xml(file, stock)
             if test_only == true
               puts factura
             else
               puts factura
-              puts "RESPONSE: \n"
+              puts "@@ RESPONSE: \n"
               puts self.cfdi_sales(factura).body.to_s
             end
             
@@ -250,7 +250,7 @@ module CfdiScrapper
     end
     
     # Generate API Invoice From CFDi v3.2 XML File
-    def generate_invoice_from_xml(file_path)
+    def generate_invoice_from_xml(file_path, stock='SERVICIO')
     
       @doc = Nokogiri::XML( File.read(file_path))
       @c = Cfdi32.new(@doc)
@@ -278,7 +278,7 @@ module CfdiScrapper
       raise "Tax Type Not Found" if taxtype.empty?
       
       # Stock ID
-      stock_id = self.get_inventory("SERVICIO")
+      stock_id = self.get_inventory(stock)
       raise "Stock ID Not Found" if stock_id.empty?
       
       # Items
