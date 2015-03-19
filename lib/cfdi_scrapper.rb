@@ -200,7 +200,7 @@ module CfdiScrapper
       
       @dir = dir
       
-      header = "concepto,unidad,precio_unitario,cantidad,importe"
+      header = "uuid,concepto,unidad,precio_unitario,cantidad,importe"
       file = @dir + "/conceptos.csv"
       
       File.open(file, "w+") do |csv|
@@ -229,13 +229,13 @@ module CfdiScrapper
                 desc = ""
                 
                 desc = "#{concepto.descripcion}".gsub(',', ' ')
-                con = I18n.transliterate("#{desc},#{concepto.unidad},#{concepto.valorUnitario},#{concepto.cantidad},#{concepto.importe}")
+                con = I18n.transliterate("#{c.timbre.uuid},#{desc},#{concepto.unidad},#{concepto.valorUnitario},#{concepto.cantidad},#{concepto.importe}")
                 csv << con
                 csv << "\n"
                 
               end
               
-              puts "/END" + "\n"
+              puts ">>END" + "\n"
               
             rescue Exception => e
               puts e
