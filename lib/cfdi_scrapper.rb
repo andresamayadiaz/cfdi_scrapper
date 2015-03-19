@@ -200,7 +200,7 @@ module CfdiScrapper
       
       @dir = dir
       
-      header = "uuid,concepto,unidad,precio_unitario,cantidad,importe"
+      header = "uuid,rfc_emisor,tipo_de_comprobante,concepto,unidad,precio_unitario,cantidad,importe"
       file = @dir + "/conceptos.csv"
       
       File.open(file, "w+") do |csv|
@@ -213,7 +213,7 @@ module CfdiScrapper
         Dir.glob(@dir+"**/*").each do |file|
           
           if File.extname(file).casecmp(".xml") >= 0
-          
+            
             # get values
             begin
               @doc = Nokogiri::XML( File.read(file) )
@@ -227,9 +227,11 @@ module CfdiScrapper
                 
                 con = ""
                 desc = ""
+                er = ""
                 
-                desc = "#{concepto.descripcion}".gsub(',', ' ')
-                con = I18n.transliterate("#{c.timbre.uuid},#{desc},#{concepto.unidad},#{concepto.valorUnitario},#{concepto.cantidad},#{concepto.importe}")
+                er = c.emisor.rfc.gsub(',', ' ').gsub('"', ' ').gsub('&#xA;',' ')
+                desc = "#{concepto.descripcion}".gsub(',', ' ').gsub('"', ' ').gsub('&#xA;',' ')
+                con = I18n.transliterate("#{c.timbre.uuid},#{er},#{c.tipoDeComprobante},#{desc},#{concepto.unidad},#{concepto.valorUnitario},#{concepto.cantidad},#{concepto.importe}")
                 csv << con
                 csv << "\n"
                 
