@@ -195,6 +195,62 @@ module CfdiScrapper
     
     end
     
+    # Generar CSV de Conceptos
+    def self.csv_conceptos(dir)
+      
+      @dir = dir
+      
+      header = "concepto,unidad,precio_unitario,cantidad,importe"
+      file = @dir + "/conceptos.csv"
+      
+      File.open(file, "w+") do |csv|
+      csv << header
+      csv << "\n"
+      
+      conceptos = {}
+      
+        # iterate dir path for xml files
+        Dir.glob(@dir+"**/*").each do |file|
+          
+          if File.extname(file).casecmp(".xml") >= 0
+          
+            # get values
+            begin
+              @doc = Nokogiri::XML( File.read(file) )
+              
+              c = Cfdi32.new(@doc)
+              puts "-------------------------------------------------------------------------\n"
+              puts file + "\n"
+              
+              # iterate through all invoice products
+              c.conceptos.each do |concepto|
+                
+                con = ""
+                desc = ""
+                
+                desc = "#{concepto.descripcion}".gsub(',', ' ')
+                con = I18n.transliterate("#{desc},#{concepto.unidad},#{concepto.valorUnitario},#{concepto.cantidad},#{concepto.importe}")
+                csv << con
+                csv << "\n"
+                
+              end
+              
+              puts "/END" + "\n"
+              
+            rescue Exception => e
+              puts e
+            end
+    
+          else
+            # not an xml
+          end
+        
+        end
+      
+      end
+      
+    end
+    
     private
       
       def self.obtener_uuid(doc)
