@@ -75,7 +75,7 @@ module CfdiScrapper
               
               if !receptores.key?(c.receptor.rfc)
                 
-                receptores[c.receptor.rfc] = I18n.transliterate("#{c.receptor.nombre.to_s.gsub(',', '')}, #{c.receptor.nombre.to_s.gsub(',', '')}, #{c.receptor.rfc}, , , , , #{c.receptor.domicilio_calle}, #{c.receptor.domicilio_noExterior}, #{c.receptor.domicilio_noInterior}, #{c.receptor.domicilio_colonia}, #{c.receptor.domicilio_codigoPostal}, #{c.receptor.domicilio_municipio}, #{c.receptor.domicilio_estado}, #{c.receptor.domicilio_pais}") #.encode('utf-8').encode('iso-8859-1')
+                receptores[c.receptor.rfc] = I18n.transliterate("#{c.receptor.nombre.to_s.gsub(',', '')},#{c.receptor.nombre.to_s.gsub(',', '')},#{c.receptor.rfc},,,,,#{c.receptor.domicilio_calle},#{c.receptor.domicilio_noExterior},#{c.receptor.domicilio_noInterior}, #{c.receptor.domicilio_colonia},#{c.receptor.domicilio_codigoPostal},#{c.receptor.domicilio_municipio},#{c.receptor.domicilio_estado},#{c.receptor.domicilio_pais}") #.encode('utf-8').encode('iso-8859-1')
                 csv << receptores[c.receptor.rfc]
                 csv << "\n"
                 
@@ -125,7 +125,7 @@ module CfdiScrapper
               
               if !emisores.key?(c.emisor.rfc)
                 
-                emisores[c.emisor.rfc] = I18n.transliterate("#{c.emisor.nombre.to_s.gsub(',', '')}, #{c.emisor.nombre.to_s.gsub(',', '')}, #{c.emisor.rfc}, , , , , #{c.emisor.domicilio_calle}, #{c.receptor.domicilio_noExterior}, #{c.emisor.domicilio_noInterior}, #{c.emisor.domicilio_colonia}, #{c.emisor.domicilio_codigoPostal}, #{c.emisor.domicilio_municipio}, #{c.emisor.domicilio_estado}, #{c.emisor.domicilio_pais}") #.encode('utf-8').encode('iso-8859-1')
+                emisores[c.emisor.rfc] = I18n.transliterate("#{c.emisor.nombre.to_s.gsub(',', '')},#{c.emisor.nombre.to_s.gsub(',', '')},#{c.emisor.rfc},,,,,#{c.emisor.domicilio_calle},#{c.receptor.domicilio_noExterior},#{c.emisor.domicilio_noInterior}, #{c.emisor.domicilio_colonia},#{c.emisor.domicilio_codigoPostal},#{c.emisor.domicilio_municipio},#{c.emisor.domicilio_estado},#{c.emisor.domicilio_pais}") #.encode('utf-8').encode('iso-8859-1')
                 csv << emisores[c.emisor.rfc]
                 csv << "\n"
                 
@@ -150,7 +150,7 @@ module CfdiScrapper
       
       @dir = dir
       
-      header = "fecha,uuid,serie,folio,emisor,receptor,tipoDeComprobante,formaDePago,noCertificado,moneda,tipoCambio,subTotal,Total,descuento,totalImpuestosRetenidos,totalImpuestosTrasladados"
+      header = "fecha,uuid,serie,folio,emisor,emisor_razonsocial,receptor,receptor_razonsocial,tipoDeComprobante,formaDePago,noCertificado,moneda,tipoCambio,subTotal,Total,descuento,totalImpuestosRetenidos,totalImpuestosTrasladados"
       file = @dir + "/comprobantes.csv"
       
       File.open(file, "w+") do |csv|
@@ -175,7 +175,7 @@ module CfdiScrapper
               
               if !comprobantes.key?(c.timbre.uuid)
                 
-                comprobantes[c.timbre.uuid] = I18n.transliterate("#{c.fecha},#{c.timbre.uuid},#{c.serie},#{c.folio},#{c.emisor.rfc},#{c.receptor.rfc},#{c.tipoDeComprobante},#{c.formaDePago},#{c.noCertificado},#{c.moneda},#{c.tipoCambio},#{c.subTotal},#{c.total},#{c.descuento},#{c.totalImpuestosRetenidos},#{c.totalImpuestosTrasladados}") #.encode('utf-8').encode('iso-8859-1')
+                comprobantes[c.timbre.uuid] = I18n.transliterate("#{c.fecha},#{c.timbre.uuid},#{c.serie},#{c.folio},#{c.emisor.rfc},#{c.emisor.nombre.to_s.gsub(',','')},#{c.receptor.rfc},#{c.receptor.nombre.to_s.gsub(',','')},#{c.tipoDeComprobante},#{c.formaDePago},#{c.noCertificado},#{c.moneda},#{c.tipoCambio},#{c.subTotal},#{c.total},#{c.descuento},#{c.totalImpuestosRetenidos},#{c.totalImpuestosTrasladados}") #.encode('utf-8').encode('iso-8859-1')
                 csv << comprobantes[c.timbre.uuid]
                 csv << "\n"
                 
@@ -200,7 +200,7 @@ module CfdiScrapper
       
       @dir = dir
       
-      header = "uuid,rfc_emisor,tipo_de_comprobante,concepto,unidad,precio_unitario,cantidad,importe"
+      header = "fecha,uuid,rfc_emisor,tipo_de_comprobante,concepto,unidad,precio_unitario,cantidad,importe"
       file = @dir + "/conceptos.csv"
       
       File.open(file, "w+") do |csv|
@@ -231,7 +231,7 @@ module CfdiScrapper
                 
                 er = c.emisor.rfc.gsub(',', ' ').gsub('"', ' ').gsub('&#xA;',' ')
                 desc = "#{concepto.descripcion}".gsub(',', ' ').gsub('"', ' ').gsub('&#xA;',' ')
-                con = I18n.transliterate("#{c.timbre.uuid},#{er},#{c.tipoDeComprobante},#{desc},#{concepto.unidad},#{concepto.valorUnitario},#{concepto.cantidad},#{concepto.importe}")
+                con = I18n.transliterate("#{c.fecha},#{c.timbre.uuid},#{er},#{c.tipoDeComprobante},#{desc},#{concepto.unidad},#{concepto.valorUnitario},#{concepto.cantidad},#{concepto.importe}")
                 csv << con
                 csv << "\n"
                 
