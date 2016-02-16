@@ -30,7 +30,7 @@ module CfdiScrapper
             
             #puts file
             #puts File.extname(file).casecmp(".xml")
-            puts self.obtener_rfcemisor(@doc) + "," + self.obtener_rfcreceptor(@doc) + "," + self.obtener_uuid(@doc) + "," + self.obtener_fecha(@doc)
+            puts self.obtener_rfcemisor(@doc) + "," + self.obtener_rfcreceptor(@doc) + "," + self.obtener_uuid(@doc) + "," + self.obtener_fecha(@doc) + "," + self.obtener_subtotal(@doc) + "," + self.obtener_total(@doc)
             #puts self.obtener_rfcreceptor(@doc)
             #puts self.obtener_uuid(@doc)
           rescue Exception => e
@@ -253,6 +253,53 @@ module CfdiScrapper
       
     end
     
+    # Generar CSV de Nomina
+    def self.csv_nomina(dir)
+      
+      @dir = dir
+      
+      header = "fecha,uuid,rfc_emisor,tipo_de_comprobante,subtotal,total,descuento,totalImpuestosRetenidos,totalImpuestosTrasladados"
+      file = @dir + "/nomina.csv"
+      
+      File.open(file, "w+") do |csv|
+      csv << header
+      csv << "\n"
+      
+        # iterate dir path for xml files
+        Dir.glob(@dir+"**/*").each do |file|
+          
+          if File.extname(file).casecmp(".xml") >= 0
+            
+            # get values
+            begin
+              @doc = Nokogiri::XML( File.read(file) )
+              
+              c = Cfdi32.new(@doc)
+              puts "-------------------------------------------------------------------------\n"
+              puts file + "\n"
+              
+              er = c.emisor.rfc.gsub(',', ' ').gsub('"', ' ').gsub('&#xA;',' ')
+              con = I18n.transliterate("#{c.fecha},#{c.timbre.uuid},#{er},#{c.tipoDeComprobante},#{c.subTotal},#{c.total},#{c.descuento},#{c.totalImpuestosRetenidos},#{c.totalImpuestosTrasladados}")
+              csv << con
+              csv << "\n"
+              
+              puts ">>END" + "\n"
+              
+            rescue Exception => e
+              puts e.backtrace
+            end
+    
+          else
+            # not an xml
+          end
+        
+        end
+      
+      end
+      
+    end
+    
+    
     private
       
       def self.obtener_uuid(doc)
@@ -284,6 +331,18 @@ module CfdiScrapper
       def self.obtener_fecha(doc)
       
         return doc.root.xpath("//cfdi:Comprobante", 'cfdi' => doc.collect_namespaces["xmlns:cfdi"]).attribute("fecha").to_s
+      
+      end
+      
+      def self.obtener_subtotal(doc)
+      
+        return doc.root.xpath("//cfdi:Comprobante", 'cfdi' => doc.collect_namespaces["xmlns:cfdi"]).attribute("subTotal").to_s
+      
+      end
+      
+      def self.obtener_total(doc)
+      
+        return doc.root.xpath("//cfdi:Comprobante", 'cfdi' => doc.collect_namespaces["xmlns:cfdi"]).attribute("total").to_s
       
       end
     

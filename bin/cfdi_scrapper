@@ -12,6 +12,8 @@ elsif ARGV[0] == '-comprobantes'
   CfdiScrapper::Cfdi_Scrapper.csv_comprobantes(ARGV[1])
 elsif ARGV[0] == '-conceptos'
   CfdiScrapper::Cfdi_Scrapper.csv_conceptos(ARGV[1])
+elsif ARGV[0] == '-nomina'
+  CfdiScrapper::Cfdi_Scrapper.csv_nomina(ARGV[1])
 else
-  puts "First Argument must be -dir | -receptores | -emisores | -comprobantes | -conceptos\nSecond Argument: XML Files Path"
+  puts "First Argument must be -dir | -receptores | -emisores | -comprobantes | -conceptos | -nomina\nSecond Argument: XML Files Path"
 end

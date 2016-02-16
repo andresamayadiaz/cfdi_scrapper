@@ -64,15 +64,16 @@ module CfdiScrapper
       @receptor.nombre = @doc.root.xpath("//cfdi:Receptor", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("nombre").to_s
         
         # Domicilio del Receptor
-        @receptor.domicilio_calle = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("calle").to_s
-        @receptor.domicilio_noExterior = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("noExterior").to_s
-        @receptor.domicilio_noInterior = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("noInterior").to_s
-        @receptor.domicilio_municipio = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("municipio").to_s
-        @receptor.domicilio_colonia = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("colonia").to_s
-        @receptor.domicilio_estado = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("estado").to_s
-        @receptor.domicilio_pais = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("pais").to_s
-        @receptor.domicilio_codigoPostal = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("codigoPostal").to_s
-        
+        if !@doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).empty?
+          @receptor.domicilio_calle = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("calle").to_s
+          @receptor.domicilio_noExterior = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("noExterior").to_s
+          @receptor.domicilio_noInterior = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("noInterior").to_s
+          @receptor.domicilio_municipio = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("municipio").to_s
+          @receptor.domicilio_colonia = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("colonia").to_s
+          @receptor.domicilio_estado = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("estado").to_s
+          @receptor.domicilio_pais = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("pais").to_s
+          @receptor.domicilio_codigoPostal = @doc.root.xpath("//cfdi:Domicilio", 'cfdi' => @doc.collect_namespaces["xmlns:cfdi"]).attribute("codigoPostal").to_s
+        end
       #logger.debug "Receptor: #{@receptor.to_json.to_s}"
       
       # Timbre Fiscal Digital
