@@ -258,7 +258,7 @@ module CfdiScrapper
       
       @dir = dir
       
-      header = "fecha,uuid,rfc_emisor,rfc_receptor,tipo_de_comprobante,subtotal,total,descuento,totalImpuestosRetenidos,totalImpuestosTrasladados"
+      header = "fecha,uuid,rfc_emisor,rfc_receptor,receptor,tipo_de_comprobante,subtotal,total,descuento,totalImpuestosRetenidos,totalImpuestosTrasladados"
       file = @dir + "/nomina.csv"
       
       File.open(file, "w+") do |csv|
@@ -280,7 +280,8 @@ module CfdiScrapper
               
               er = c.emisor.rfc.gsub(',', ' ').gsub('"', ' ').gsub('&#xA;',' ')
               re = c.receptor.rfc.gsub(',', ' ').gsub('"', ' ').gsub('&#xA;',' ')
-              con = I18n.transliterate("#{c.fecha},#{c.timbre.uuid},#{er},#{re},#{c.tipoDeComprobante},#{c.subTotal},#{c.total},#{c.descuento},#{c.totalImpuestosRetenidos},#{c.totalImpuestosTrasladados}")
+              resocial = c.receptor.nombre.gsub(',', ' ').gsub('"', ' ').gsub('&#xA;',' ')
+              con = I18n.transliterate("#{c.fecha},#{c.timbre.uuid},#{er},#{re},#{resocial},#{c.tipoDeComprobante},#{c.subTotal},#{c.total},#{c.descuento},#{c.totalImpuestosRetenidos},#{c.totalImpuestosTrasladados}")
               csv << con
               csv << "\n"
               
